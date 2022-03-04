@@ -15,12 +15,8 @@ const {
   DATABASE_URL: connectionString,
 } = process.env;
 
-if (!connectionString) {
-  console.error('Vantar connectionString í env');
-  process.exit(1);
-}
-if (!sessionSecret) {
-  console.error('Vantar secret í env');
+if (!connectionString || !sessionSecret) {
+  console.error('Vantar gögn í env');
   process.exit(1);
 }
 
