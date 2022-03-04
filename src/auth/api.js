@@ -69,9 +69,8 @@ async function userRoute(req,res){
     }
     delete user.password;
     return res.status(200).json(user);
-  } else {
-    return res.status(400).json({ error: 'Missing privilege'})
   }
+  return res.status(400).json({ error: 'Missing privilege'})
 }
 
 async function currentUserRoute(req, res) {
@@ -173,7 +172,10 @@ async function deleteEvent(req, res) {
     return res.status(404).json({ error: 'Event not found' });
   }
   const result = await deleteEventRow(id);
-  return res.status(200).json({ info: 'Event deleted'});
+  if (result.rowCount === 0) {
+    return res.status(200).json({ info: 'Event deleted'});
+  }
+  return res.status(400).json({ error: 'Couldn\'t delete event'});
 }
 
 async function registerUser(req, res) {
@@ -192,16 +194,18 @@ async function deleteRegistrationRouter(req, res) {
   const name = user.username;
   const event = req.params.id;
   const result = await deleteRegistration(name, event)
-  return res.status(200).json({info: 'Registration removed'});
+  if (result.rowCount === 0) {
+    return res.status(200).json({info: 'Registration removed'});
+  }
+  return res.status(400).json({error: 'Registration couldn\'t be removed'});
 }
 
 async function listUsersRouter(req, res) {
   if(req.user.isadmin){
     const result = await listUsers();
     return res.status(200).json(result);
-  } else {
-    return res.status(400).json({ error: 'Not enough privilege'})
   }
+  return res.status(400).json({ error: 'Not enough privilege'})
 }
 
 async function newUserRoute(req, res) {
@@ -255,6 +259,7 @@ router.post(
   validationUsernameAndPass,
   xssSanitizationUsername,
   sanitizationMiddlewareUsername,
+  usernameDoesNotExistValidator,
   validationCheck,
   catchErrors(newUserRoute)
 );

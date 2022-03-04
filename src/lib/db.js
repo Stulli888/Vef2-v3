@@ -58,21 +58,19 @@ export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
   return query(data.toString('utf-8'));
 }
 
-export async function createEvent({ name, slug, description } = {}) {
+export async function createEvent({ name, slug, description, maker } = {}) {
   const q = `
     INSERT INTO events
-      (name, slug, description)
+      (name, slug, description, maker)
     VALUES
-      ($1, $2, $3)
-    RETURNING id, name, slug, description;
+      ($1, $2, $3, $4)
+    RETURNING id, name, slug, description, maker
   `;
-  const values = [name, slug, description];
+  const values = [name, slug, description, maker];
   const result = await query(q, values);
-
   if (result && result.rowCount === 1) {
     return result.rows[0];
   }
-
   return null;
 }
 

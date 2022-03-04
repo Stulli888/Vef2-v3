@@ -1,12 +1,15 @@
+import { readFile } from 'fs/promises';
 import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
 import dotenv from 'dotenv';
 import {
   createEvent,
+  registerEvent,
   createSchema,
   dropSchema,
   end,
   register,
   updateEvent,
+  query,
 } from '../lib/db';
 
 dotenv.config({ path: './.env.test' });
@@ -15,6 +18,8 @@ describe('db', () => {
   beforeAll(async () => {
     await dropSchema();
     await createSchema();
+    const data = await readFile('./sql/testInsert.sql');
+    await query(data.toString('utf-8'));
   });
 
   afterAll(async () => {
@@ -23,11 +28,9 @@ describe('db', () => {
 
   it('creates a valid event and returns it', async () => {
     const name = 'test';
-
-    const result = await createEvent({
-      name,
-      slug: name,
-    });
+    const description = 'foo';
+    const maker = 1;
+    const result = await registerEvent(name, description, maker);
     expect(result.name).toBe(name);
     expect(result.slug).toBe(name);
     expect(result.id).toBeGreaterThan(0);
@@ -45,21 +48,19 @@ describe('db', () => {
   it('does not allow creating two events with the same name', async () => {
     const event = {
       name: 'foo',
-      slug: 'foo',
+      maker: 1
     };
-    const result = await createEvent(event);
-    const sameName = await createEvent(event);
+    const result = await registerEvent(event);
+    const sameName = await registerEvent(event);
     expect(result).toBeDefined();
     expect(sameName).toBeNull();
   });
 
   it('creates and updates an event', async () => {
-    const result = await createEvent({
-      name: 'one',
-      slug: 'one',
-      description: 'd',
-    });
-
+    const name = 'test1';
+    const description = 'd';
+    const maker = 1;
+    const result = await registerEvent(name, description, maker);
     const updated = await updateEvent(result.id, { name: 'two', slug: 'two' });
     expect(updated.id).toEqual(result.id);
     expect(updated.name).toBe('two');
@@ -69,7 +70,10 @@ describe('db', () => {
   });
 
   it('allows registering to events', async () => {
-    const event = await createEvent({ name: 'e', slug: 'e' });
+    const name = 'test1';
+    const description = 'd';
+    const maker = 1;
+    const event = await registerEvent(name, description, maker);
     const registration = await register({ name: 'r', event: event.id });
 
     expect(registration.name).toEqual('r');
