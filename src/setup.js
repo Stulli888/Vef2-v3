@@ -12,7 +12,6 @@ async function create() {
   }
 
   const result = await createSchema();
-
   if (result) {
     console.info('schema created');
   } else {

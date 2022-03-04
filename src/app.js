@@ -5,8 +5,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import passport from './lib/login.js';
 import { isInvalid } from './lib/template-helpers.js';
-import { adminRouter } from './routes/admin-routes.js';
-import { indexRouter } from './routes/index-routes.js';
+import { router } from './auth/api.js';
 
 dotenv.config();
 
@@ -25,7 +24,7 @@ const app = express();
 
 // Sér um að req.body innihaldi gögn úr formi
 app.use(express.urlencoded({ extended: true }));
-
+app.use(express.json());
 const path = dirname(fileURLToPath(import.meta.url));
 
 app.use(express.static(join(path, '../public')));
@@ -48,8 +47,8 @@ app.locals = {
   isInvalid,
 };
 
-app.use('/admin', adminRouter);
-app.use('/', indexRouter);
+app.use('/', router);
+
 
 /** Middleware sem sér um 404 villur. */
 app.use((req, res) => {

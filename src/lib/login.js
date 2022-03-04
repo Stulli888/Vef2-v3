@@ -1,6 +1,6 @@
 import passport from 'passport';
 import { Strategy } from 'passport-local';
-import { comparePasswords, findById, findByUsername } from './users.js';
+import { comparePasswords, findUserById, findUserByUsername } from './users.js';
 
 /**
  * Athugar hvort username og password sé til í notandakerfi.
@@ -14,7 +14,7 @@ import { comparePasswords, findById, findByUsername } from './users.js';
  */
 async function strat(username, password, done) {
   try {
-    const user = await findByUsername(username);
+    const user = await findUserByUsername(username);
 
     if (!user) {
       return done(null, false);
@@ -43,7 +43,7 @@ passport.serializeUser((user, done) => {
 // Sækir notanda út frá id
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await findById(id);
+    const user = await findUserById(id);
     done(null, user);
   } catch (err) {
     done(err);
@@ -57,7 +57,7 @@ export function ensureLoggedIn(req, res, next) {
     return next();
   }
 
-  return res.redirect('/admin/login');
+  return res.redirect('/users/login');
 }
 
 export default passport;

@@ -1,6 +1,8 @@
 import { readFile } from 'fs/promises';
 import pg from 'pg';
 
+import { slugify } from './slugify.js';
+
 const SCHEMA_FILE = './sql/schema.sql';
 const DROP_SCHEMA_FILE = './sql/drop.sql';
 
@@ -47,7 +49,6 @@ export async function query(q, values = []) {
 
 export async function createSchema(schemaFile = SCHEMA_FILE) {
   const data = await readFile(schemaFile);
-
   return query(data.toString('utf-8'));
 }
 
@@ -109,11 +110,9 @@ export async function register({ name, comment, event } = {}) {
   `;
   const values = [name, comment, event];
   const result = await query(q, values);
-
   if (result && result.rowCount === 1) {
     return result.rows[0];
   }
-
   return null;
 }
 
@@ -187,6 +186,127 @@ export async function listRegistered(event) {
   }
 
   return null;
+}
+
+export async function listUsers() {
+  const q = `
+    SELECT
+      id, username
+    FROM
+      users
+  `;
+
+  const result = await query(q);
+
+  if (result) {
+    return result.rows;
+  }
+  return null;
+}
+
+
+export async function conditionalUpdate(table, id, fields, values) {
+  const filteredFields = fields.filter((i) => typeof i === 'string');
+  const filteredValues = values
+    .filter((i) => typeof i === 'string'
+      || typeof i === 'number'
+      || i instanceof Date);
+
+  if (filteredFields.length === 0) {
+    return false;
+  }
+
+  if (filteredFields.length !== filteredValues.length) {
+    throw new Error('fields and values must be of equal length');
+  }
+
+  // id is field = 1
+  const updates = filteredFields.map((field, i) => `${field} = $${i + 2}`);
+
+  const q = `
+    UPDATE ${table}
+      SET ${updates.join(', ')}
+    WHERE
+      id = $1
+    RETURNING *
+    `;
+
+  const queryValues = [id].concat(filteredValues);
+
+  console.info('Conditional update', q, queryValues);
+
+  const result = await query(q, queryValues);
+
+  return result;
+}
+
+export async function getAllEvents() {
+  const q = `
+    SELECT
+      id, name
+    FROM
+      events
+  `;
+
+  const result = await query(q);
+  if (result) {
+    return result.rows;
+  }
+  return null;
+}
+
+export async function registerEvent(name, description, maker) {
+  const q = `
+    INSERT INTO events
+      (name, slug, description, maker)
+    VALUES
+      ($1, $2, $3, $4)
+    RETURNING
+    id, name, slug, description, maker
+  `;
+  const values = [name, slugify(name), description, maker];
+  const result = await query(q, values);
+  if (result && result.rowCount === 1) {
+    return result.rows[0];
+  }
+  return null;
+}
+
+export async function getEventById(id) {
+  const q = `
+    SELECT
+      *
+    FROM 
+      events
+    WHERE
+      id = $1
+  `;
+  const result = await query(q, [id]);
+  if (result && result.rowCount === 1) {
+    return result.rows[0];
+  }
+
+  return null;
+}
+
+export async function deleteEventRow(id) {
+  const q = `
+    DELETE FROM
+      events
+    WHERE
+      id = $1
+  `;
+  return query(q, [id]);
+}
+
+export async function deleteRegistration(name, event) {
+  const q = `
+    DELETE FROM
+      registrations
+    WHERE
+    id = $1 AND name = $2
+  `;
+  return query(q, [event, name]);
 }
 
 export async function end() {

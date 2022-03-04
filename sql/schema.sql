@@ -1,10 +1,20 @@
+CREATE TABLE public.users (
+  id serial primary key,
+  name VARCHAR(64) NOT NULL UNIQUE,
+  username character varying(64) NOT NULL,
+  password character varying(256) NOT NULL,
+  isAdmin BOOLEAN DEFAULT FALSE
+);
+
 CREATE TABLE public.events (
   id SERIAL PRIMARY KEY,
   name VARCHAR(64) NOT NULL UNIQUE,
   slug VARCHAR(64) NOT NULL UNIQUE,
   description TEXT,
+  maker INTEGER NOT NULL DEFAULT 1,
   created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT maker FOREIGN KEY (maker) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE public.registrations (
@@ -13,11 +23,6 @@ CREATE TABLE public.registrations (
   comment TEXT,
   event INTEGER NOT NULL,
   created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT event FOREIGN KEY (event) REFERENCES events (id)
+  CONSTRAINT event FOREIGN KEY (event) REFERENCES events(id) ON DELETE CASCADE
 );
 
-CREATE TABLE public.users (
-  id serial primary key,
-  username character varying(64) NOT NULL,
-  password character varying(256) NOT NULL
-);
