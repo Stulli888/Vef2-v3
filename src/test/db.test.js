@@ -2,6 +2,9 @@ import { readFile } from 'fs/promises';
 import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
 import dotenv from 'dotenv';
 import {
+  getEventById,
+  getAllEvents,
+  listUsers,
   createEvent,
   registerEvent,
   createSchema,
@@ -89,5 +92,21 @@ describe('db', () => {
     const registration = await register({ event: 0 });
 
     expect(registration).toBeNull();
+  });
+  it('can fetch a list of users', async () => {
+    const users = await listUsers();
+    expect(users[0].id).toEqual(1);
+  });
+  it('can fetch an event using a unique id', async () => {
+    const event = await getEventById(1)
+    expect(event.name).toBe('test');
+  });
+  it('can fetch all of it\'s events', async () => {
+    const events = await getAllEvents();
+    expect(events[0].id).toEqual(1);
+    expect(events).toHaveLength(3);
+  });
+  it('', async () => {
+
   });
 });

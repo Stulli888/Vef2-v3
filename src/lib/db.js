@@ -93,7 +93,6 @@ export async function updateEvent(id, { name, slug, description } = {}) {
   if (result && result.rowCount === 1) {
     return result.rows[0];
   }
-
   return null;
 }
 
@@ -111,78 +110,6 @@ export async function register({ name, comment, event } = {}) {
   if (result && result.rowCount === 1) {
     return result.rows[0];
   }
-  return null;
-}
-
-export async function listEvents() {
-  const q = `
-    SELECT
-      id, name, slug, description, created, updated
-    FROM
-      events
-  `;
-
-  const result = await query(q);
-
-  if (result) {
-    return result.rows;
-  }
-
-  return null;
-}
-
-export async function listEvent(slug) {
-  const q = `
-    SELECT
-      id, name, slug, description, created, updated
-    FROM
-      events
-    WHERE slug = $1
-  `;
-
-  const result = await query(q, [slug]);
-
-  if (result && result.rowCount === 1) {
-    return result.rows[0];
-  }
-
-  return null;
-}
-
-// TODO gætum fellt þetta fall saman við það að ofan
-export async function listEventByName(name) {
-  const q = `
-    SELECT
-      id, name, slug, description, created, updated
-    FROM
-      events
-    WHERE name = $1
-  `;
-
-  const result = await query(q, [name]);
-
-  if (result && result.rowCount === 1) {
-    return result.rows[0];
-  }
-
-  return null;
-}
-
-export async function listRegistered(event) {
-  const q = `
-    SELECT
-      id, name, comment
-    FROM
-      registrations
-    WHERE event = $1
-  `;
-
-  const result = await query(q, [event]);
-
-  if (result) {
-    return result.rows;
-  }
-
   return null;
 }
 

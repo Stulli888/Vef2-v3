@@ -13,7 +13,9 @@ npm start # eða `npm run dev`
 
 ## cURL skipanir
 
-Efsta skipunin gefur token sem þarf í aðrar aðgerðir
+Efsta skipunin gefur token sem þarf í aðrar aðgerðir\
+
+### POST/users/login
 `
 curl --location --request POST 'https://protected-hollows-46830.herokuapp.com/users/login' 
 --header 'Content-Type: application/json' 
